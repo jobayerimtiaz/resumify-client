@@ -16,6 +16,7 @@ import PersonalInfoForm from "../components/PersonalInfoForm";
 import ResumePreview from "../components/ResumePreview";
 import TemplateSelector from "../components/TemplateSelector";
 import ColorPicker from "../components/ColorPicker";
+import ProfessionalSummary from "../components/ProfessionalSummary";
 
 const ResumeBuilder = () => {
   const { resumeId } = useParams();
@@ -131,54 +132,78 @@ const ResumeBuilder = () => {
                     setRemoveBackground={setRemoveBackground}
                   />
                 )}
+                {activeSection?.id === "summary" && (
+                  <ProfessionalSummary
+                    data={resumeData.professional_summary}
+                    onChange={(data) =>
+                      setResumeData((prev) => ({
+                        ...prev,
+                        professional_summary: data,
+                      }))
+                    }
+                    setResumeData={setResumeData}
+                  />
+                )}
               </div>
 
               {/* Navigation */}
-              <div className="flex items-center justify-between pt-6 border-t">
-                <div>
-                  <TemplateSelector
-                    selectedTemplate={resumeData.template}
-                    onchange={(template) =>
-                      setResumeData((prev) => ({ ...prev, template }))
-                    }
-                  ></TemplateSelector>
-                  <ColorPicker
-                    selectedColor={resumeData.accent_color}
-                    onChange={(color) =>
-                      setResumeData((prev) => ({
-                        ...prev,
-                        accent_color: color,
-                      }))
-                    }
-                  ></ColorPicker>
-                </div>
-                <button
-                  onClick={() =>
-                    setActiveSectionIndex((prev) => Math.max(prev - 1, 0))
-                  }
-                  disabled={activeSectionIndex === 0}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border
-                  disabled:opacity-40 disabled:cursor-not-allowed
-                  hover:border-[#432DD7] hover:text-[#432DD7]"
-                >
-                  <ChevronLeft size={16} />
-                  Previous
-                </button>
+              {/* Footer Navigation */}
+              <div className="pt-6 border-t relative overflow-visible">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  {/* Left: Design Controls */}
+                  <div className="flex flex-wrap items-center gap-3 w-2/4">
+                    <TemplateSelector
+                      selectedTemplate={resumeData.template}
+                      onchange={(template) =>
+                        setResumeData((prev) => ({ ...prev, template }))
+                      }
+                    />
 
-                <button
-                  onClick={() =>
-                    setActiveSectionIndex((prev) =>
-                      Math.min(prev + 1, sections.length - 1)
-                    )
-                  }
-                  disabled={activeSectionIndex === sections.length - 1}
-                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white
-                  bg-[#432DD7] rounded-lg hover:bg-[#3623b3]
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                  <ChevronRight size={16} />
-                </button>
+                    <ColorPicker
+                      selectedColor={resumeData.accent_color}
+                      onChange={(color) =>
+                        setResumeData((prev) => ({
+                          ...prev,
+                          accent_color: color,
+                        }))
+                      }
+                    />
+                  </div>
+
+                  {/* Right: Navigation */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() =>
+                        setActiveSectionIndex((prev) => Math.max(prev - 1, 0))
+                      }
+                      disabled={activeSectionIndex === 0}
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium
+          rounded-lg border text-gray-600
+          disabled:opacity-40 disabled:cursor-not-allowed
+          hover:border-[#432DD7] hover:text-[#432DD7]
+          transition"
+                    >
+                      <ChevronLeft size={16} />
+                      Previous
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        setActiveSectionIndex((prev) =>
+                          Math.min(prev + 1, sections.length - 1)
+                        )
+                      }
+                      disabled={activeSectionIndex === sections.length - 1}
+                      className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white
+          bg-[#432DD7] rounded-lg hover:bg-[#3623b3]
+          disabled:opacity-50 disabled:cursor-not-allowed
+          transition"
+                    >
+                      Next
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
