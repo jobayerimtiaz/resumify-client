@@ -6,9 +6,13 @@ import {
   Briefcase,
   ChevronLeft,
   ChevronRight,
+  DownloadIcon,
+  EyeIcon,
+  EyeOffIcon,
   FileText,
   FolderIcon,
   GraduationCap,
+  Share2Icon,
   Sparkle,
   User,
 } from "lucide-react";
@@ -64,6 +68,25 @@ const ResumeBuilder = () => {
     loadExistingResume();
   }, []);
 
+  const changeResumeVisibility = () => {
+    setResumeData({ ...resumeData, public: !resumeData.public });
+  };
+
+  const handleShare = () => {
+    const frontendUrl = window.location.href.split("/app")[0];
+    const resumeUrl = frontendUrl + "/view" + resumeId;
+
+    if (navigator.share) {
+      navigator.share({ url: resumeUrl, text: "My Resume" });
+    } else {
+      alert("Share is not supported on your browser");
+    }
+  };
+
+  const DownloadResume = () => {
+    window.print();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -79,11 +102,11 @@ const ResumeBuilder = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="md:max-w-7xl mx-auto px-6 py-8">
         <div className="grid lg:grid-cols-12 gap-8">
           {/* LEFT PANEL */}
           <div className="lg:col-span-6">
-            <div className="bg-white rounded-2xl shadow-sm border p-6 space-y-6">
+            <div className="w-3/4 md:w-full bg-white rounded-2xl shadow-sm border p-6 space-y-6">
               {/* Progress */}
               <div className="space-y-2">
                 <div className="flex justify-between text-xs text-gray-500">
@@ -200,7 +223,7 @@ const ResumeBuilder = () => {
               <div className="pt-6 border-t relative overflow-visible">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   {/* Left: Design Controls */}
-                  <div className="flex flex-wrap items-center gap-3 w-2/4">
+                  <div className="w-full flex flex-wrap items-center gap-3 md:w-2/4">
                     <TemplateSelector
                       selectedTemplate={resumeData.template}
                       onchange={(template) =>
@@ -220,36 +243,44 @@ const ResumeBuilder = () => {
                   </div>
 
                   {/* Right: Navigation */}
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() =>
-                        setActiveSectionIndex((prev) => Math.max(prev - 1, 0))
-                      }
-                      disabled={activeSectionIndex === 0}
-                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() =>
+                          setActiveSectionIndex((prev) => Math.max(prev - 1, 0))
+                        }
+                        disabled={activeSectionIndex === 0}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium
           rounded-lg border text-gray-600
           disabled:opacity-40 disabled:cursor-not-allowed
           hover:border-[#432DD7] hover:text-[#432DD7]
           transition"
-                    >
-                      <ChevronLeft size={16} />
-                      Previous
-                    </button>
+                      >
+                        <ChevronLeft size={16} />
+                        Previous
+                      </button>
 
-                    <button
-                      onClick={() =>
-                        setActiveSectionIndex((prev) =>
-                          Math.min(prev + 1, sections.length - 1)
-                        )
-                      }
-                      disabled={activeSectionIndex === sections.length - 1}
-                      className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white
+                      <button
+                        onClick={() =>
+                          setActiveSectionIndex((prev) =>
+                            Math.min(prev + 1, sections.length - 1)
+                          )
+                        }
+                        disabled={activeSectionIndex === sections.length - 1}
+                        className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white
           bg-[#432DD7] rounded-lg hover:bg-[#3623b3]
           disabled:opacity-50 disabled:cursor-not-allowed
           transition"
+                      >
+                        Next
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                    <button
+                      className="w-1/2 md:w-full flex justify-center items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white
+          bg-[#432DD7] rounded-lg hover:bg-[#3623b3]"
                     >
-                      Next
-                      <ChevronRight size={16} />
+                      Save Changes
                     </button>
                   </div>
                 </div>
@@ -259,7 +290,30 @@ const ResumeBuilder = () => {
 
           {/* RIGHT PANEL — Preview */}
           <div className="lg:col-span-6">
-            <div>buttons will appear here</div>
+            <div className="flex gap-4">
+              {resumeData.public && (
+                <button onClick={handleShare}>
+                  <Share2Icon />
+                  Share
+                </button>
+              )}
+              <button
+                onClick={changeResumeVisibility}
+                className=" flex justify-center items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white
+          bg-[#432DD7] rounded-lg hover:bg-[#3623b3]"
+              >
+                {resumeData.public ? <EyeIcon /> : <EyeOffIcon />}
+                {resumeData.public ? "Public" : "Private"}
+              </button>
+              <button
+                onClick={DownloadResume}
+                className=" flex justify-center items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white
+          bg-[#432DD7] rounded-lg hover:bg-[#3623b3]"
+              >
+                <DownloadIcon />
+                Download
+              </button>
+            </div>
             <div className="sticky top-8 bg-white border rounded-2xl shadow-sm p-6 h-[calc(100vh-6rem)] flex items-center justify-center">
               <p className="text-sm text-gray-400">
                 <ResumePreview
