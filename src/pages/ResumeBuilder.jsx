@@ -16,6 +16,7 @@ import {
   Sparkle,
   User,
 } from "lucide-react";
+
 import PersonalInfoForm from "../components/PersonalInfoForm";
 import ResumePreview from "../components/ResumePreview";
 import TemplateSelector from "../components/TemplateSelector";
@@ -28,6 +29,7 @@ import SkillsForm from "../components/SkillsForm";
 
 const ResumeBuilder = () => {
   const { resumeId } = useParams();
+
   const [resumeData, setResumeData] = useState({
     _id: "",
     title: "",
@@ -38,17 +40,9 @@ const ResumeBuilder = () => {
     project: [],
     skills: [],
     template: "classic",
-    accent_color: "#3B82F6",
+    accent_color: "#4F46E5",
     public: false,
   });
-
-  const loadExistingResume = async () => {
-    const resume = dummyResumeData.find((resume) => resume._id === resumeId);
-    if (resume) {
-      setResumeData(resume);
-      document.title = resume.title;
-    }
-  };
 
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const [removeBackground, setRemoveBackground] = useState(false);
@@ -64,22 +58,29 @@ const ResumeBuilder = () => {
 
   const activeSection = sections[activeSectionIndex];
 
+  /* ---------------------- RESTORED FUNCTIONS ---------------------- */
+
   useEffect(() => {
-    loadExistingResume();
-  }, []);
+    const resume = dummyResumeData.find((r) => r._id === resumeId);
+    if (resume) {
+      setResumeData(resume);
+      document.title = resume.title;
+    }
+  }, [resumeId]);
 
   const changeResumeVisibility = () => {
-    setResumeData({ ...resumeData, public: !resumeData.public });
+    setResumeData((prev) => ({ ...prev, public: !prev.public }));
   };
 
   const handleShare = () => {
     const frontendUrl = window.location.href.split("/app")[0];
-    const resumeUrl = frontendUrl + "/view" + resumeId;
+    const resumeUrl = `${frontendUrl}/view/${resumeId}`;
 
     if (navigator.share) {
       navigator.share({ url: resumeUrl, text: "My Resume" });
     } else {
-      alert("Share is not supported on your browser");
+      navigator.clipboard.writeText(resumeUrl);
+      alert("Link copied to clipboard");
     }
   };
 
@@ -87,246 +88,209 @@ const ResumeBuilder = () => {
     window.print();
   };
 
+  const saveChanges = () => {
+    console.log("Saving resume", resumeData);
+    // hook API here
+  };
+
+  /* ---------------------------------------------------------------- */
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="border-b bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-3">
+      <header className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <Link
             to="/app"
-            className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#432DD7]"
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-indigo-600"
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={16} />
             Back to Dashboard
           </Link>
         </div>
-      </div>
+      </header>
 
-      <div className="md:max-w-7xl mx-auto px-6 py-8">
-        <div className="grid lg:grid-cols-12 gap-8">
+      {/* Main */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* LEFT PANEL */}
-          <div className="lg:col-span-6">
-            <div className="w-3/4 md:w-full bg-white rounded-2xl shadow-sm border p-6 space-y-6">
-              {/* Progress */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>
-                    Step {activeSectionIndex + 1} of {sections.length}
-                  </span>
-                  <span className="font-medium text-[#432DD7]">
-                    {activeSection.name}
-                  </span>
-                </div>
-
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#432DD7] transition-all duration-300"
-                    style={{
-                      width: `${
-                        (activeSectionIndex * 100) / (sections.length - 1)
-                      }%`,
-                    }}
-                  />
-                </div>
+          <section className="bg-white rounded-2xl border shadow-sm p-5 sm:p-6 space-y-6">
+            {/* Progress */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>
+                  Step {activeSectionIndex + 1} of {sections.length}
+                </span>
+                <span className="font-medium text-indigo-600">
+                  {activeSection.name}
+                </span>
               </div>
-
-              {/* Section Header */}
-              <div className="flex items-center gap-3 border-b pb-4">
-                <div className="w-10 h-10 rounded-xl bg-[#432DD7]/10 flex items-center justify-center">
-                  <activeSection.icon className="text-[#432DD7]" size={20} />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    {activeSection.name}
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    Fill in your {activeSection.name.toLowerCase()}
-                  </p>
-                </div>
-              </div>
-
-              {/* Form Content */}
-              <div className="space-y-6">
-                {activeSection?.id === "personal" && (
-                  <PersonalInfoForm
-                    data={resumeData.personal_info}
-                    onChange={(data) =>
-                      setResumeData((prev) => ({
-                        ...prev,
-                        personal_info: data,
-                      }))
-                    }
-                    removeBackground={removeBackground}
-                    setRemoveBackground={setRemoveBackground}
-                  />
-                )}
-                {activeSection?.id === "summary" && (
-                  <ProfessionalSummary
-                    data={resumeData.professional_summary}
-                    onChange={(data) =>
-                      setResumeData((prev) => ({
-                        ...prev,
-                        professional_summary: data,
-                      }))
-                    }
-                    setResumeData={setResumeData}
-                  />
-                )}
-                {activeSection?.id === "experience" && (
-                  <ExperienceForm
-                    data={resumeData.experience}
-                    onChange={(data) =>
-                      setResumeData((prev) => ({
-                        ...prev,
-                        experience: data,
-                      }))
-                    }
-                  />
-                )}
-                {activeSection?.id === "education" && (
-                  <EducationForm
-                    data={resumeData.education}
-                    onChange={(data) =>
-                      setResumeData((prev) => ({
-                        ...prev,
-                        education: data,
-                      }))
-                    }
-                  />
-                )}
-                {activeSection?.id === "projects" && (
-                  <ProjectForm
-                    data={resumeData.project}
-                    onChange={(data) =>
-                      setResumeData((prev) => ({
-                        ...prev,
-                        project: data,
-                      }))
-                    }
-                  />
-                )}
-                {activeSection?.id === "skills" && (
-                  <SkillsForm
-                    data={resumeData.skills}
-                    onChange={(data) =>
-                      setResumeData((prev) => ({
-                        ...prev,
-                        skills: data,
-                      }))
-                    }
-                  />
-                )}
-              </div>
-
-              {/* Navigation */}
-              {/* Footer Navigation */}
-              <div className="pt-6 border-t relative overflow-visible">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  {/* Left: Design Controls */}
-                  <div className="w-full flex flex-wrap items-center gap-3 md:w-2/4">
-                    <TemplateSelector
-                      selectedTemplate={resumeData.template}
-                      onchange={(template) =>
-                        setResumeData((prev) => ({ ...prev, template }))
-                      }
-                    />
-
-                    <ColorPicker
-                      selectedColor={resumeData.accent_color}
-                      onChange={(color) =>
-                        setResumeData((prev) => ({
-                          ...prev,
-                          accent_color: color,
-                        }))
-                      }
-                    />
-                  </div>
-
-                  {/* Right: Navigation */}
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() =>
-                          setActiveSectionIndex((prev) => Math.max(prev - 1, 0))
-                        }
-                        disabled={activeSectionIndex === 0}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium
-          rounded-lg border text-gray-600
-          disabled:opacity-40 disabled:cursor-not-allowed
-          hover:border-[#432DD7] hover:text-[#432DD7]
-          transition"
-                      >
-                        <ChevronLeft size={16} />
-                        Previous
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          setActiveSectionIndex((prev) =>
-                            Math.min(prev + 1, sections.length - 1)
-                          )
-                        }
-                        disabled={activeSectionIndex === sections.length - 1}
-                        className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white
-          bg-[#432DD7] rounded-lg hover:bg-[#3623b3]
-          disabled:opacity-50 disabled:cursor-not-allowed
-          transition"
-                      >
-                        Next
-                        <ChevronRight size={16} />
-                      </button>
-                    </div>
-                    <button
-                      className="w-1/2 md:w-full flex justify-center items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white
-          bg-[#432DD7] rounded-lg hover:bg-[#3623b3]"
-                    >
-                      Save Changes
-                    </button>
-                  </div>
-                </div>
+              <div className="h-2 bg-slate-200 rounded-full">
+                <div
+                  className="h-full bg-indigo-600 rounded-full transition-all"
+                  style={{
+                    width: `${
+                      (activeSectionIndex / (sections.length - 1)) * 100
+                    }%`,
+                  }}
+                />
               </div>
             </div>
-          </div>
 
-          {/* RIGHT PANEL — Preview */}
-          <div className="lg:col-span-6">
-            <div className="flex gap-4">
+            {/* Section Header */}
+            <div className="flex items-center gap-3 border-b pb-4">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                <activeSection.icon className="text-indigo-600" size={20} />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  {activeSection.name}
+                </h2>
+                <p className="text-sm text-slate-500">
+                  Complete this section carefully
+                </p>
+              </div>
+            </div>
+
+            {/* FORMS */}
+            {activeSection.id === "personal" && (
+              <PersonalInfoForm
+                data={resumeData.personal_info}
+                onChange={(data) =>
+                  setResumeData((prev) => ({ ...prev, personal_info: data }))
+                }
+                removeBackground={removeBackground}
+                setRemoveBackground={setRemoveBackground}
+              />
+            )}
+
+            {activeSection.id === "summary" && (
+              <ProfessionalSummary
+                data={resumeData.professional_summary}
+                onChange={(data) =>
+                  setResumeData((prev) => ({
+                    ...prev,
+                    professional_summary: data,
+                  }))
+                }
+              />
+            )}
+
+            {activeSection.id === "experience" && (
+              <ExperienceForm
+                data={resumeData.experience}
+                onChange={(data) =>
+                  setResumeData((prev) => ({ ...prev, experience: data }))
+                }
+              />
+            )}
+
+            {activeSection.id === "education" && (
+              <EducationForm
+                data={resumeData.education}
+                onChange={(data) =>
+                  setResumeData((prev) => ({ ...prev, education: data }))
+                }
+              />
+            )}
+
+            {activeSection.id === "projects" && (
+              <ProjectForm
+                data={resumeData.project}
+                onChange={(data) =>
+                  setResumeData((prev) => ({ ...prev, project: data }))
+                }
+              />
+            )}
+
+            {activeSection.id === "skills" && (
+              <SkillsForm
+                data={resumeData.skills}
+                onChange={(data) =>
+                  setResumeData((prev) => ({ ...prev, skills: data }))
+                }
+              />
+            )}
+
+            {/* FOOTER */}
+            <div className="border-t pt-6 space-y-4">
+              <div className="flex flex-wrap gap-3">
+                <TemplateSelector
+                  selectedTemplate={resumeData.template}
+                  onchange={(template) =>
+                    setResumeData((prev) => ({ ...prev, template }))
+                  }
+                />
+                <ColorPicker
+                  selectedColor={resumeData.accent_color}
+                  onChange={(color) =>
+                    setResumeData((prev) => ({ ...prev, accent_color: color }))
+                  }
+                />
+              </div>
+
+              <div className="flex justify-between items-center gap-3">
+                <button
+                  disabled={activeSectionIndex === 0}
+                  onClick={() => setActiveSectionIndex((i) => i - 1)}
+                  className="px-4 py-2 border rounded-lg text-sm"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                <button
+                  onClick={saveChanges}
+                  className="px-6 py-2 bg-indigo-600 text-white rounded-lg"
+                >
+                  Save Changes
+                </button>
+
+                <button
+                  disabled={activeSectionIndex === sections.length - 1}
+                  onClick={() => setActiveSectionIndex((i) => i + 1)}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* RIGHT PANEL */}
+          <section className="bg-white rounded-2xl border shadow-sm p-4 sm:p-6 lg:sticky lg:top-6 h-fit">
+            <div className="flex flex-wrap gap-3 mb-4">
               {resumeData.public && (
-                <button onClick={handleShare}>
-                  <Share2Icon />
-                  Share
+                <button onClick={handleShare} className="btn-primary">
+                  <Share2Icon size={16} /> Share
                 </button>
               )}
-              <button
-                onClick={changeResumeVisibility}
-                className=" flex justify-center items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white
-          bg-[#432DD7] rounded-lg hover:bg-[#3623b3]"
-              >
-                {resumeData.public ? <EyeIcon /> : <EyeOffIcon />}
+
+              <button onClick={changeResumeVisibility} className="btn-primary">
+                {resumeData.public ? (
+                  <EyeIcon size={16} />
+                ) : (
+                  <EyeOffIcon size={16} />
+                )}
                 {resumeData.public ? "Public" : "Private"}
               </button>
-              <button
-                onClick={DownloadResume}
-                className=" flex justify-center items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white
-          bg-[#432DD7] rounded-lg hover:bg-[#3623b3]"
-              >
-                <DownloadIcon />
-                Download
+
+              <button onClick={DownloadResume} className="btn-primary">
+                <DownloadIcon size={16} /> Download
               </button>
             </div>
-            <div className="sticky top-8 bg-white border rounded-2xl shadow-sm p-6 h-[calc(100vh-6rem)] flex items-center justify-center">
-              <p className="text-sm text-gray-400">
-                <ResumePreview
-                  data={resumeData}
-                  template={resumeData.template}
-                  accentColor={resumeData.accent_color}
-                ></ResumePreview>
-              </p>
+
+            <div className="max-h-[75vh] overflow-auto border rounded-lg">
+              <ResumePreview
+                data={resumeData}
+                template={resumeData.template}
+                accentColor={resumeData.accent_color}
+              />
             </div>
-          </div>
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
+
 export default ResumeBuilder;

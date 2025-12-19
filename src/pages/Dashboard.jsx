@@ -44,6 +44,7 @@ const Dashboard = () => {
 
   const editTitle = async (event) => {
     event.preventDefault();
+    navigate(`/app/builder/${editResumeId}`);
   };
 
   const deleteResume = async (resumeId) => {
