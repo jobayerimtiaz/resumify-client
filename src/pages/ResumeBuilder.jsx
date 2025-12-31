@@ -58,8 +58,6 @@ const ResumeBuilder = () => {
 
   const activeSection = sections[activeSectionIndex];
 
-  /* ---------------------- RESTORED FUNCTIONS ---------------------- */
-
   useEffect(() => {
     const resume = dummyResumeData.find((r) => r._id === resumeId);
     if (resume) {
